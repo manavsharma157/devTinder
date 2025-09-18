@@ -9,6 +9,12 @@ const { validateSignupData } = require("./utils/validation");
 
 const bcrypt = require("bcrypt");
 
+const cookieParser = require("cookie-parser");
+
+const jwt = require("jsonwebtoken");
+
+const { userAuth } = require("./middlewares/auth");
+
 // const express = require('express');
 
 // const app = express(); //instance of an express application
@@ -25,7 +31,7 @@ const bcrypt = require("bcrypt");
 // })
 
 app.use(express.json()); //middleware to parse incoming JSON request bodies
-
+app.use(cookieParser()); //middleware to parse cookies from incoming requests
 //Route to handle user signup
 app.post("/signup", async (req, res) => {
   try {
@@ -139,26 +145,46 @@ app.patch("/user/:userId", async (req, res) => {
 });
 
 app.post("/login", async (req, res) => {
-  try{
-    const {emailId, password} = req.body;
-    const user = await User.findOne({emailId});
-    if (!user){
+  try {
+    const { emailId, password } = req.body;
+    const user = await User.findOne({ emailId });
+    if (!user) {
       throw new Error("Invalid credentials");
     }
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (isPasswordValid){
+    if (isPasswordValid) {
+      // Create a JWT token
+      const token = await jwt.sign({ _id: user._id }, "DEV@Tinder2025", { expiresIn : "7d"});
+
+      // Addd the token to cookie and send the response to the user
+      res.cookie("token", token, {expires : new Date(Date.now() + 7 * 3600000), httpOnly: true}); //cookie will be valid for 8 hours
+
       res.send("User logged in successfully");
-    }
-    else{
+    } else {
       throw new Error("Invalid credentials");
     }
-  
-  }
-  catch(err){
+  } catch (err) {
     res.status(500).send("Error logging in: " + err.message);
   }
 });
 
+//added userAuth middleware to protect this route
+//the route will execute only if next() is called from the middleware
+app.get("/profile", userAuth, async (req, res) => {
+  //user can only access this route if they are logged in through cookies
+  try {
+    const user = req.user; //user is attached to the req object in the userAuth middleware
+    res.send(user);
+  } catch (err) {
+    res.status(500).send("Error fetching profile: " + err.message);
+  }
+});
+
+app.post("/sendconnectionRequest", userAuth, async (req, res) => {
+  const user = req.user; //logged in user
+  const { connectionId } = req.body; //id of the user to whom the request is to be sent
+  res.send("Connection request sent");
+});
 
 /////////////////////////////////////////////////
 //FIrst connect to the database and then start the server
