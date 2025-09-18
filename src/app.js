@@ -158,7 +158,7 @@ app.post("/login", async (req, res) => {
 
       // const token = await jwt.sign({ _id: user._id }, "DEV@Tinder2025", { expiresIn : "7d"});
 
-      const user = await user.getJWT();
+      const token = await user.getJWT();
       // Addd the token to cookie and send the response to the user
       res.cookie("token", token, {
         expires: new Date(Date.now() + 7 * 3600000),

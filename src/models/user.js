@@ -5,6 +5,8 @@ const mongoose = require("mongoose");
 // const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // simple, pragmatic email check
 
 const validator = require("validator");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 
 const userSchema = new mongoose.Schema(
   {
