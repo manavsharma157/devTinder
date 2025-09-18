@@ -44,7 +44,8 @@ const userSchema = new mongoose.Schema(
           // return boolean — Mongoose will use the `message` if false
           return validator.isStrongPassword(String(value));
         },
-        message: "Weak password. Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number and 1 symbol.",
+        message:
+          "Weak password. Password must contain at least 1 lowercase letter, 1 uppercase letter, 1 number and 1 symbol.",
       },
     },
     age: {
@@ -70,7 +71,7 @@ const userSchema = new mongoose.Schema(
         },
         message: "Invalid image format",
       },
-      },
+    },
     bio: {
       type: String,
       trim: true,
@@ -89,6 +90,23 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+//offloaded JWT creation to the model method
+userSchema.methods.getJWT = async function () {
+  const user = this;
+  
+  const token = await jwt.sign({ _id: user._id }, "DEV@Tinder2025", { expiresIn : "7d"});
+
+  
+return token;
+}
+//offloaded password validation to the model method
+userSchema.methods.validatePassword = async function (passwordInputByUser) {
+  const user = this;
+  const passwordHash = user.password;
+  return await bcrypt.compare(passwordInputByUser, passwordHash);
+};
+
 
 // Remove sensitive fields when converting to JSON (e.g., when sending user to client)
 userSchema.set("toJSON", {
