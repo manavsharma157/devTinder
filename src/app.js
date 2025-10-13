@@ -14,7 +14,7 @@ const jwt = require("jsonwebtoken");
 const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/requests");
-
+const userRouter = require("./routes/user");
 // const express = require('express');
 
 // const app = express(); //instance of an express application
@@ -35,6 +35,7 @@ app.use(cookieParser()); //middleware to parse cookies from incoming requests
 app.use("/", authRouter); //routes related to authentication
 app.use("/", profileRouter);
 app.use("/", requestRouter);
+app.use("/", userRouter);
 
 //to get all users
 app.get("/feed", async (req, res) => {

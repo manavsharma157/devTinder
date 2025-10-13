@@ -2,7 +2,7 @@ const express = require("express");
 const requestRouter = express.Router();
 const User = require("../models/user");
 const { userAuth } = require("../middlewares/auth");
-const connectionRequest = require("../models/connectionRequest");
+const ConnectionRequest = require("../models/connectionRequest");
 
 requestRouter.post(
   "/request/send/:status/:toUserId",
@@ -25,7 +25,7 @@ requestRouter.post(
       }
 
       //check if a request already exists
-      const existingRequest = await connectionRequest.findOne({
+      const existingRequest = await ConnectionRequest.findOne({
         $or: [
           { fromUserId, toUserId },
           { fromUserId: toUserId, toUserId: fromUserId },
@@ -40,7 +40,7 @@ requestRouter.post(
       }
 
       //create a new connection request
-      const connectionReq = new connectionRequest({
+      const connectionReq = new ConnectionRequest({
         fromUserId,
         toUserId,
         status,
@@ -61,4 +61,36 @@ requestRouter.post(
   }
 );
 
+requestRouter.post("/request/review/:status/:requestId", userAuth, async (req, res) => {
+  try {
+    const loggedInUser = req.user;
+    const status = req.params.status; //accepted or rejected
+
+    const allowedStatus = ["accepted", "rejected"];
+    if (!allowedStatus.includes(status)) {
+      throw new Error("Status not allowed");
+    }
+
+    const requestId = req.params.requestId;
+    
+    const connectionRequest = await ConnectionRequest.findOne({
+      _id: requestId,
+      toUserId: loggedInUser._id,
+      status: "interested"
+    })
+    if (!connectionRequest) {
+      throw new Error("No pending request found");
+    }
+
+    connectionRequest.status = status;
+   const data = await connectionRequest.save();
+  res.json({ message: `Request ${status} successfully`, data });
+
+  }
+  catch (err) {
+    res.status(500).send("Error reviewing request: " + err.message);
+  }
+
+
+});
 module.exports = requestRouter;
