@@ -2,19 +2,16 @@ const express = require("express");
 const app = express(); //instance of an express application
 //importing the database connection function
 const connectDB = require("./config/database");
-
 const User = require("./models/user");
-
 const bcrypt = require("bcrypt");
-
 const cookieParser = require("cookie-parser");
-
 const jwt = require("jsonwebtoken");
 
 const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/requests");
 const userRouter = require("./routes/user");
+const cors = require("cors");
 // const express = require('express');
 
 // const app = express(); //instance of an express application
@@ -29,7 +26,10 @@ const userRouter = require("./routes/user");
 // app.use("/test",(req, res) => {
 //     res.send("Hello from the server");
 // })
-
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true,
+})); //to allow cross origin requests
 app.use(express.json()); //middleware to parse incoming JSON request bodies
 app.use(cookieParser()); //middleware to parse cookies from incoming requests
 app.use("/", authRouter); //routes related to authentication

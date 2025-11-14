@@ -73,7 +73,7 @@ authRouter.post("/login", async (req, res) => {
         httpOnly: true,
       }); //cookie will be valid for 8 hours
 
-      res.send("User logged in successfully");
+      res.send(user);
     } else {
       throw new Error("Invalid credentials");
     }
