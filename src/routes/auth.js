@@ -5,34 +5,51 @@ const { validateSignupData } = require("../utils/validation");
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
 
-
-
-
 authRouter.post("/signup", async (req, res) => {
   try {
-    //Validation of Data
+    // 1. Validate Data
     validateSignupData(req);
 
-    const { firstName, lastName, emailId, password, age } = req.body;
+    // 2. Extract ALL fields (including gender, photoUrl, bio)
+    const {
+      firstName,
+      lastName,
+      emailId,
+      password,
+      age,
+      gender,
+      photoUrl,
+      bio,
+    } = req.body;
 
-    //eNCRYPTION
-    const passwordHash = await bcrypt.hash(password, 10); //hashing the password with salt rounds of 10
+    // 3. Encrypt Password
+    const passwordHash = await bcrypt.hash(password, 10);
 
-    //Encrypt the password before saving (recommended)
-
+    // 4. Create User Instance
     const user = new User({
       firstName,
       lastName,
       emailId,
       password: passwordHash,
       age,
-    }); // Creating a new user with this data
+      gender, 
+      photoUrl, 
+      bio, 
+    });
 
-    // const user = new User(userObj); // Creating a new user with this data
-    // //or we can say Creating a new instance of user model
+    const savedUser = await user.save();
 
-    await user.save(); //saving the user to the database
-    res.send("User signed up successfully");
+    // 5. CRITICAL STEP: Generate Token & Set Cookie
+    // (So the user is logged in immediately after signup)
+    const token = await savedUser.getJWT();
+
+    res.cookie("token", token, {
+      expires: new Date(Date.now() + 8 * 3600000), // 8 hours
+    });
+
+    // 6. Send back the User Data (so Redux can update)
+    // 6. Send back ONLY the User Data (so Redux works correctly)
+    res.json(savedUser);
   } catch (err) {
     res.status(500).send("ERROR: " + err.message);
   }
@@ -83,19 +100,14 @@ authRouter.post("/login", async (req, res) => {
 });
 
 authRouter.post("/logout", (req, res) => {
-    try {
-        res.cookie("token", null, {
-        expires: new Date(Date.now()),
-      }); 
-        res.send("User logged out successfully");
-    } catch (err) {
-        res.status(500).send("Error logging out: " + err.message);
-    }
+  try {
+    res.cookie("token", null, {
+      expires: new Date(Date.now()),
+    });
+    res.send("User logged out successfully");
+  } catch (err) {
+    res.status(500).send("Error logging out: " + err.message);
+  }
 });
-
-
-
-
-
 
 module.exports = authRouter;

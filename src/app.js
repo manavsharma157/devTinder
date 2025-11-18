@@ -27,7 +27,7 @@ const cors = require("cors");
 //     res.send("Hello from the server");
 // })
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: ["http://localhost:5173", "http://localhost:5174"],
   credentials: true,
 })); //to allow cross origin requests
 app.use(express.json()); //middleware to parse incoming JSON request bodies
