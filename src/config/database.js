@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 const connectDB = async () => {
   try {
     await mongoose.connect(
-      "mongodb://manav157sh_db_user:Manav1234@ac-cynnoen-shard-00-00.zuwnpwj.mongodb.net:27017,ac-cynnoen-shard-00-01.zuwnpwj.mongodb.net:27017,ac-cynnoen-shard-00-02.zuwnpwj.mongodb.net:27017/devTinder?ssl=true&replicaSet=atlas-7lnpfs-shard-0&authSource=admin&appName=test"
+      process.env.DB_CONNECTION_SECRET,
     );
     console.log("Atlas Database Connected Successfully!");
   } catch (err) {

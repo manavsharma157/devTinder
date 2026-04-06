@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const app = express(); //instance of an express application
 //importing the database connection function
@@ -12,6 +14,7 @@ const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/requests");
 const userRouter = require("./routes/user");
 const cors = require("cors");
+
 // const express = require('express');
 
 // const app = express(); //instance of an express application
