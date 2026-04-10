@@ -89,6 +89,13 @@ const userSchema = new mongoose.Schema(
         message: "You can add up to 5 skills only.",
       },
     },
+    isPremium: {
+      type: Boolean,
+      default: false,
+    },
+    membershipType: {
+      type: String,
+    }
   },
   { timestamps: true }
 );

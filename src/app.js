@@ -1,4 +1,5 @@
 require("dotenv").config();
+// require("./utils/cronjob"); //to start the cron job for deleting expired requests
 
 const express = require("express");
 const app = express(); //instance of an express application
@@ -14,6 +15,7 @@ const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/requests");
 const userRouter = require("./routes/user");
 const cors = require("cors");
+const paymentrouter = require("./routes/payment");
 
 // const express = require('express');
 
@@ -39,6 +41,7 @@ app.use("/", authRouter); //routes related to authentication
 app.use("/", profileRouter);
 app.use("/", requestRouter);
 app.use("/", userRouter);
+app.use("/", paymentrouter);
 
 //to get all users
 app.get("/feed", async (req, res) => {
