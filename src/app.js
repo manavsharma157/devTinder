@@ -16,6 +16,12 @@ const requestRouter = require("./routes/requests");
 const userRouter = require("./routes/user");
 const cors = require("cors");
 const paymentrouter = require("./routes/payment");
+const http = require("http");
+const initializeSocket = require("./utils/socket");
+const chatRouter = require("./routes/chat");
+
+const server = http.createServer(app);
+initializeSocket(server);
 
 // const express = require('express');
 
@@ -42,6 +48,7 @@ app.use("/", profileRouter);
 app.use("/", requestRouter);
 app.use("/", userRouter);
 app.use("/", paymentrouter);
+app.use("/", chatRouter);
 
 //to get all users
 app.get("/feed", async (req, res) => {
@@ -139,7 +146,7 @@ app.patch("/user/:userId", async (req, res) => {
 connectDB()
   .then(() => {
     console.log("MongoDB connected");
-    app.listen(3000, () => {
+    server.listen(3000, () => {
       console.log("Server is successfully listening on port 3000...");
     });
   })
