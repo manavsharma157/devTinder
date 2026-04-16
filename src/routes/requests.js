@@ -3,8 +3,7 @@ const requestRouter = express.Router();
 const User = require("../models/user");
 const { userAuth } = require("../middlewares/auth");
 const ConnectionRequest = require("../models/connectionRequest");
-// Import the email logic
-const { run: sendEmail } = require("../utils/sendEmail"); 
+const { run: sendEmail } = require("../utils/sendEmail");
 
 requestRouter.post(
   "/request/send/:status/:toUserId",
@@ -17,13 +16,11 @@ requestRouter.post(
       const toUserId = req.params.toUserId;
       const status = req.params.status;
 
-      // 1. Fetch the recipient user so you can use their name in the response message
       const toUser = await User.findById(toUserId);
       if (!toUser) {
         throw new Error("User not found");
       }
 
-      // 2. Add your validation (checking allowed status and existing requests)
       const allowedStatus = ["interested", "ignored"];
       if (!allowedStatus.includes(status)) {
         throw new Error("Status not allowed");
@@ -43,60 +40,34 @@ requestRouter.post(
         throw new Error("You cannot send request to yourself");
       }
 
-      // 3. Save the request
       const connectionReq = new ConnectionRequest({
         fromUserId,
         toUserId,
         status,
       });
 
-      // ... inside your requestRouter.post route
-const data = await connectionReq.save();
+      const data = await connectionReq.save();
 
-if (status === "interested") {
-  try {
-    const emailSubject = "New Connection Request from " + req.user.firstName;
-    const emailBody = `<h1>Hi ${toUser.firstName},</h1>
-                       <p>${req.user.firstName} is interested in your profile on DevTinder!</p>
-                       <p>Login to your account to review the request.</p>`;
+      if (status === "interested") {
+        try {
+          const emailSubject = "New Connection Request from " + req.user.firstName;
+          const emailBody = `<h1>Hi ${toUser.firstName},</h1>
+                             <p>${req.user.firstName} is interested in your profile on DevTinder!</p>
+                             <p>Login to your account to review the request.</p>`;
 
-    // Pass the actual recipient's email from the database
-    await sendEmail(
-      toUser.emailId, // Make sure your User model uses 'emailId' or 'email'
-      toUser.firstName,
-      emailSubject,
-      emailBody
-    );
-    
-    console.log("==> Custom email sent to:", toUser.emailId);
-  } catch (emailErr) {// ... inside your requestRouter.post route
-const data = await connectionReq.save();
+          await sendEmail(
+            toUser.emailId,
+            toUser.firstName,
+            emailSubject,
+            emailBody
+          );
 
-if (status === "interested") {
-  try {
-    const emailSubject = "New Connection Request from " + req.user.firstName;
-    const emailBody = `<h1>Hi ${toUser.firstName},</h1>
-                       <p>${req.user.firstName} is interested in your profile on DevTinder!</p>
-                       <p>Login to your account to review the request.</p>`;
+          console.log("==> Custom email sent to:", toUser.emailId);
+        } catch (emailErr) {
+          console.error("Email failed to send:", emailErr.message);
+        }
+      }
 
-    // Pass the actual recipient's email from the database
-    await sendEmail(
-      toUser.emailId, // Make sure your User model uses 'emailId' or 'email'
-      toUser.firstName,
-      emailSubject,
-      emailBody
-    );
-    
-    console.log("==> Custom email sent to:", toUser.emailId);
-  } catch (emailErr) {
-    console.error("Email failed to send:", emailErr.message);
-  }
-}
-    console.error("Email failed to send:", emailErr.message);
-  }
-}
-
-      // 5. Send success response (toUser is now defined!)
       res.json({
         message: status === "interested"
           ? `${req.user.firstName} is interested in ${toUser.firstName}`
@@ -122,7 +93,7 @@ requestRouter.post("/request/review/:status/:requestId", userAuth, async (req, r
     }
 
     const requestId = req.params.requestId;
-    
+
     const connectionRequest = await ConnectionRequest.findOne({
       _id: requestId,
       toUserId: loggedInUser._id,
